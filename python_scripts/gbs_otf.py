@@ -15,9 +15,9 @@ from make_otf import make_otf
 from make_long_otf import make_long_otf
 from simulate_moon import simulate_moon
 
+#TODO: check for existince of otfs in the file system to automate generation of OTFs
+
 # Telescope Parameters
-
-
 D = 0.07                        # diameter of telescope in meters
 obs = 0                         # obscuration diameter
 lamb = 610*10**(-9)             # wavelength of ligth in meters
@@ -30,7 +30,7 @@ r2 = (obs/2)*pixle_per_meter    # radius of obscuration in pixels
 scale = 1                       # value at dc
 phase = np.zeros([si, si])      # zero for non-abberated system
 
-# path to saved files
+# path to saved files TODO: make OS agnostic
 path = os.getcwd() + '/source_files/'
 
 # Model Telescope
@@ -51,7 +51,7 @@ dx = 4*r1/si
 atmosphere_otf = np.load(path + 'atmosphere_otf.npy')
 
 # Model Telescope + Atmosphere
-otfTurbulent = np.multiply(fftshift(tele_otf), atmosphere_otf)
+otfTurbulent = np.multiply(tele_otf, atmosphere_otf)
 psfTurbulent = ifft2(fftshift(otfTurbulent))
 
 # Simulate Moon
@@ -59,17 +59,37 @@ psfTurbulent = ifft2(fftshift(otfTurbulent))
 # np.save('photon_img', photon_img)
 photon_img = np.load(path + 'photon_img.npy')
 
-output_img = real(ifft2(np.multiply((otfTurbulent), fft2(photon_img))))
+output_img = real(ifft2(np.multiply(otfTurbulent, fft2(photon_img))))
+
+# fig = plt.figure()
+# ax = fig.add_subplot(projection='3d')
+# X = np.arange(0,len(otfTurbulent))
+# Y = np.arange(0,len(otfTurbulent))
+# X,Y = np.meshgrid(X, Y)
+
+# ax.plot_surface(X,Y, (abs(fftshift(fft2(photon_img)))))
+# ax.plot_surface(X,Y, (abs(fftshift(atmosphere_otf))))
+# plt.savefig('fft_photonimg')
 
 # Add Poison Noise
 noise_mask = np.random.poisson(real(output_img))
 noisy_img = output_img + noise_mask
 
+f, ax = plt.subplots(1,2)
+ax[0].imshow(output_img)
+ax[0].set_title('Img Out')
+ax[1].imshow(noise_mask)
+ax[1].set_title('Noise Mask')
+plt.savefig('noisy plots')
+# print(noise_mask.max())
+
 
 # Plots
-f, axarr = plt.subplots(2,2)
-axarr[0,0].imshow(photon_img)
-axarr[0,1].imshow(output_img)
-axarr[1,0].imshow(noisy_img)
-axarr[1,1].imshow(noisy_img)
-plt.savefig('plots')
+# f, axarr = plt.subplots(1,3)
+# axarr[0].imshow(photon_img)
+# axarr[0].set_title('Simulated Moon')
+# axarr[1].imshow(output_img)
+# axarr[1].set_title('Telescope x Moon')
+# axarr[2].imshow(noisy_img)
+# axarr[2].set_title('Noisy Img')
+# plt.savefig('plots')
