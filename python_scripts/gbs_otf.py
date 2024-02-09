@@ -8,6 +8,7 @@ import numpy as np
 from numpy import squeeze, ceil, real
 from scipy.fft import fft2, ifft2, fftshift
 import matplotlib.pyplot as plt
+from skimage.util import random_noise
 import os
 
 
@@ -61,35 +62,30 @@ photon_img = np.load(path + 'photon_img.npy')
 
 output_img = real(ifft2(np.multiply(otfTurbulent, fft2(photon_img))))
 
-# fig = plt.figure()
-# ax = fig.add_subplot(projection='3d')
-# X = np.arange(0,len(otfTurbulent))
-# Y = np.arange(0,len(otfTurbulent))
-# X,Y = np.meshgrid(X, Y)
-
-# ax.plot_surface(X,Y, (abs(fftshift(fft2(photon_img)))))
-# ax.plot_surface(X,Y, (abs(fftshift(atmosphere_otf))))
-# plt.savefig('fft_photonimg')
-
 # Add Poison Noise
-noise_mask = np.random.poisson(real(output_img))
-noisy_img = output_img + noise_mask
+noisy_img = random_noise(real(output_img), mode='poisson')
 
-f, ax = plt.subplots(1,2)
-ax[0].imshow(output_img)
-ax[0].set_title('Img Out')
-ax[1].imshow(noise_mask)
-ax[1].set_title('Noise Mask')
-plt.savefig('noisy plots')
-# print(noise_mask.max())
+# f, ax = plt.subplots(1,2)
+# ax[0].imshow(output_img)
+# ax[0].set_title('Img Out')
+# ax[1].imshow(noisy_img)
+# ax[1].set_title('Noisy Img')
+# plt.savefig('noisy plots')
+# # print(noise_mask.max())
 
 
 # Plots
-# f, axarr = plt.subplots(1,3)
-# axarr[0].imshow(photon_img)
-# axarr[0].set_title('Simulated Moon')
-# axarr[1].imshow(output_img)
-# axarr[1].set_title('Telescope x Moon')
-# axarr[2].imshow(noisy_img)
-# axarr[2].set_title('Noisy Img')
-# plt.savefig('plots')
+f, axarr = plt.subplots(1,3)
+axarr[0].imshow(photon_img)
+axarr[0].set_xlabel('Simulated Moon')
+axarr[0].tick_params(left = False, right = False , labelleft = False , 
+                labelbottom = False, bottom = False) 
+axarr[1].imshow(output_img)
+axarr[1].set_xlabel('Telescope x Moon')
+axarr[1].tick_params(left = False, right = False , labelleft = False , 
+                labelbottom = False, bottom = False) 
+axarr[2].imshow(noisy_img)
+axarr[2].set_xlabel('Noisy Img')
+axarr[2].tick_params(left = False, right = False , labelleft = False , 
+                labelbottom = False, bottom = False) 
+plt.savefig('plots')
