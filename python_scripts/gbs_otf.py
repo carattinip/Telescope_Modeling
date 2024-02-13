@@ -73,6 +73,8 @@ noisy_img = random_noise(real(output_img), mode='poisson')
 # plt.savefig('noisy plots')
 # # print(noise_mask.max())
 
+# noisy_img.tofile('noisy_img.csv', sep = ',')
+
 
 # Plots
 f, axarr = plt.subplots(1,3)
