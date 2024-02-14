@@ -95,22 +95,22 @@ noisy_img = np.random.poisson(output_img)
 
 # Plots of Objects
 f, axarr = plt.subplots(2,2)
-axarr[0,0].imshow(noisy_img[0], norm='linear')
+axarr[0,0].imshow(noisy_img[0])
 axarr[0,0].set_xlabel('left 1/4')
 axarr[0,0].tick_params(left = False, right = False , labelleft = False , 
                 labelbottom = False, bottom = False) 
 
-axarr[0,1].imshow(noisy_img[1], norm='linear')
+axarr[0,1].imshow(noisy_img[1])
 axarr[0,1].set_xlabel('left 2/4')
 axarr[0,1].tick_params(left = False, right = False , labelleft = False , 
                 labelbottom = False, bottom = False) 
 
-axarr[1,0].imshow(noisy_img[2], norm='linear')
+axarr[1,0].imshow(noisy_img[2])
 axarr[1,0].set_xlabel('right 2/4')
 axarr[1,0].tick_params(left = False, right = False , labelleft = False , 
                 labelbottom = False, bottom = False)
                 
-axarr[1,1].imshow(noisy_img[3], norm='linear')
+axarr[1,1].imshow(noisy_img[3]gits)
 axarr[1,1].set_xlabel('right 4/4')
 axarr[1,1].tick_params(left = False, right = False , labelleft = False , 
                 labelbottom = False, bottom = False) 
