@@ -56,14 +56,15 @@ otfTurbulent = np.multiply(tele_otf, atmosphere_otf)
 psfTurbulent = ifft2(fftshift(otfTurbulent))
 
 # Simulate Moon
-# photon_img = simulate_moon(0.07, 0.4, 610.0*10**-9,1)
-# np.save('photon_img', photon_img)
-photon_img = np.load(path + 'photon_img.npy')
+photon_img = simulate_moon(0.07, 0.4, 610.0*10**-9,1)
+np.save('photon_img', photon_img)
+# photon_img = np.load(path + 'photon_img.npy')
 
 output_img = real(ifft2(np.multiply(otfTurbulent, fft2(photon_img))))
 
 # Add Poison Noise
-noisy_img = random_noise(real(output_img), mode='poisson')
+# noisy_img = random_noise(real(output_img), mode='poisson')
+noisy_img = np.random.poisson(output_img)
 
 # f, ax = plt.subplots(1,2)
 # ax[0].imshow(output_img)
@@ -76,18 +77,41 @@ noisy_img = random_noise(real(output_img), mode='poisson')
 # noisy_img.tofile('noisy_img.csv', sep = ',')
 
 
-# Plots
-f, axarr = plt.subplots(1,3)
-axarr[0].imshow(photon_img)
-axarr[0].set_xlabel('Simulated Moon')
-axarr[0].tick_params(left = False, right = False , labelleft = False , 
+# # Plots of Sim Chain
+# f, axarr = plt.subplots(1,3)
+# axarr[0].imshow(photon_img[1], norm='linear')
+# axarr[0].set_xlabel('Simulated Moon')
+# axarr[0].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
+# axarr[1].imshow(output_img[1], norm='linear')
+# axarr[1].set_xlabel('Telescope x Moon')
+# axarr[1].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
+# axarr[2].imshow(noisy_img[1], norm='linear')
+# axarr[2].set_xlabel('Noisy Img')
+# axarr[2].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
+# plt.savefig('plots')
+
+# Plots of Objects
+f, axarr = plt.subplots(2,2)
+axarr[0,0].imshow(noisy_img[0], norm='linear')
+axarr[0,0].set_xlabel('left 1/4')
+axarr[0,0].tick_params(left = False, right = False , labelleft = False , 
                 labelbottom = False, bottom = False) 
-axarr[1].imshow(output_img)
-axarr[1].set_xlabel('Telescope x Moon')
-axarr[1].tick_params(left = False, right = False , labelleft = False , 
+
+axarr[0,1].imshow(noisy_img[1], norm='linear')
+axarr[0,1].set_xlabel('left 2/4')
+axarr[0,1].tick_params(left = False, right = False , labelleft = False , 
                 labelbottom = False, bottom = False) 
-axarr[2].imshow(noisy_img)
-axarr[2].set_xlabel('Noisy Img')
-axarr[2].tick_params(left = False, right = False , labelleft = False , 
+
+axarr[1,0].imshow(noisy_img[2], norm='linear')
+axarr[1,0].set_xlabel('right 2/4')
+axarr[1,0].tick_params(left = False, right = False , labelleft = False , 
+                labelbottom = False, bottom = False)
+                
+axarr[1,1].imshow(noisy_img[3], norm='linear')
+axarr[1,1].set_xlabel('right 4/4')
+axarr[1,1].tick_params(left = False, right = False , labelleft = False , 
                 labelbottom = False, bottom = False) 
 plt.savefig('plots')

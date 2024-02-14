@@ -43,7 +43,8 @@ def simulate_moon(D,F,lam,dt):
     v = c / lam                                 # frequency of light
     moon_reflectivity = 0.10                    # moon's reflectivity is 10%
     photons = (Intensity * dpix * dt * moon_reflectivity) / (h * v)
-    energy = (photons / (4.0 * np.pi * Moon_dist ** 2.0)) * np.pi * (D / 2.0)**2.0
+    # energy = (photons / (4.0 * np.pi * Moon_dist ** 2.0)) * np.pi * (D / 2.0)**2.0
+
 
     # Make Image reflect real energy values
 
@@ -52,9 +53,27 @@ def simulate_moon(D,F,lam,dt):
 
     norm_moon = np.divide(Source_img, moon_max)
 
-    photons_img = np.multiply(norm_moon, energy)
+    photons_img = np.multiply(norm_moon, photons)
 
-    return photons_img
+    # Add dim objects
+    obj_reflectivity = 1
+    obj_photons = (Intensity * dpix * dt * obj_reflectivity) / (h * v)
+    # obj_photons = 5e20
+
+    images = np.zeros([4,3000,3000])
+    images[0] = photons_img
+    images[0,1500,0] =  obj_photons
+
+    images[1] = photons_img
+    images[1,1500,999] =  obj_photons
+
+    images[2] = photons_img
+    images[2,1500,1999] =  obj_photons
+
+    images[3] = photons_img
+    images[3,1500,2999] =  obj_photons
+
+    return images
 
 # photon_img = simulate_moon(0.07, 0.4, 610.0*10**-9,1)
 
