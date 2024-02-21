@@ -10,7 +10,7 @@ from scipy.fft import fft2, ifft2, fftshift
 from numpy import squeeze, ceil, real
 import matplotlib.pyplot as plt
 
-def simulate_moon(D,F,lam,dt):
+def simulate_moon(D,F,lam,dt, gen_dim_obj):
 
     path = os.getcwd() + '/source_files/moon_img.txt'
     opo9914d = np.genfromtxt(path, delimiter=",").astype('float')
@@ -42,9 +42,9 @@ def simulate_moon(D,F,lam,dt):
     c = 3.0e8                                     # speed of light in meters
     v = c / lam                                 # frequency of light
     moon_reflectivity = 0.10                    # moon's reflectivity is 10%
-    photons = (Intensity * dpix * dt * moon_reflectivity) / (h * v)
+    photons_moon = (Intensity * ((dtheta*Moon_dist)**2) * dt * moon_reflectivity) / (h * v)
     # energy = (photons / (4.0 * np.pi * Moon_dist ** 2.0)) * np.pi * (D / 2.0)**2.0
-
+    photons_telescope = (photons_moon*np.pi*(D/2)**2)/(2*np.pi*(Moon_dist)**2)
 
     # Make Image reflect real energy values
 
@@ -55,23 +55,29 @@ def simulate_moon(D,F,lam,dt):
 
     photons_img = np.multiply(norm_moon, photons)
 
-    # Add dim objects
-    obj_reflectivity = 1
-    obj_photons = (Intensity * dpix * dt * obj_reflectivity) / (h * v)
-    # obj_photons = 5e20
+    if gen_dim_obj:
+        # Add dim objects
+        object_size = 10        # area of object in m^2
+        obj_reflectivity = 1
+        obj_photons = (Intensity * (object_size) * dt * obj_reflectivity) / (h * v)
+        obj_photons_telescope = (obj_photons*np.pi*(D/2)**2)/(2*np.pi*(Moon_dist)**2)
+        # obj_photons = 5e20
 
-    images = np.zeros([4,3000,3000])
-    images[0] = photons_img
-    images[0,1500,0] =  obj_photons
+        images = np.zeros([4,3000,3000])
+        images[0] = photons_img
+        images[0,1500,0] =  obj_photons_telescope
 
-    images[1] = photons_img
-    images[1,1500,999] =  obj_photons
+        images[1] = photons_img
+        images[1,1500,999] =  obj_photons_telescope
 
-    images[2] = photons_img
-    images[2,1500,1999] =  obj_photons
+        images[2] = photons_img
+        images[2,1500,1999] =  obj_photons_telescope
 
-    images[3] = photons_img
-    images[3,1500,2999] =  obj_photons
+        images[3] = photons_img
+        images[3,1500,2999] =  obj_photons_telescope
+
+    else:
+        images = photons_img
 
     return images
 

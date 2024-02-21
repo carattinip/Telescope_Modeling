@@ -15,6 +15,7 @@ import os
 from make_otf import make_otf
 from make_long_otf import make_long_otf
 from simulate_moon import simulate_moon
+from detector_blur import detector_blur
 
 #TODO: check for existince of otfs in the file system to automate generation of OTFs
 
@@ -24,7 +25,7 @@ obs = 0                         # obscuration diameter
 lamb = 610*10**(-9)             # wavelength of ligth in meters
 f = 0.4                         # focal length in meters
 si = 3000                       # ccd pixel dimensions
-pixle_per_meter = si/5          # array is 5x5 meter
+pixle_per_meter = si/(2*D)          # array is 5x5 meter
 dm = 1/pixle_per_meter          # distance between pixels in meters
 r1 = (D/2)*pixle_per_meter      # radius of telescope in pixels
 r2 = (obs/2)*pixle_per_meter    # radius of obscuration in pixels
@@ -35,9 +36,9 @@ phase = np.zeros([si, si])      # zero for non-abberated system
 path = os.getcwd() + '/source_files/'
 
 # Model Telescope
-# tele_otf, norm_psf2 , pupil2 = make_otf(r1,r2,si,scale,phase)
-# np.save('tele_otf', tele_otf)
-tele_otf = np.load(path + 'tele_otf.npy')
+tele_otf, norm_psf2 , pupil2 = make_otf(r1,r2,si,scale,phase)
+np.save('tele_otf', tele_otf)
+# tele_otf = np.load(path + 'tele_otf.npy')
 
 # Atmosphere Parameters
 z = 100*10**3                   # Karman line ~ 100km
@@ -47,32 +48,41 @@ dx = 4*r1/si
 
 
 # Model Atmosphere
-# atmosphere_otf = make_long_otf(r1,dm,si,ro)
-# np.save('atmosphere_otf', atmosphere_otf)
-atmosphere_otf = np.load(path + 'atmosphere_otf.npy')
+atmosphere_otf = make_long_otf(r1,dm,si,ro)
+np.save('atmosphere_otf', atmosphere_otf)
+# atmosphere_otf = np.load(path + 'atmosphere_otf.npy')
 
 # Model Telescope + Atmosphere
 otfTurbulent = np.multiply(tele_otf, atmosphere_otf)
 psfTurbulent = ifft2(fftshift(otfTurbulent))
 
+# detector model
+detector_otf = detector_blur(2, 2, si)
+np.save('detector_otf', detector_otf)
+total_otf = np.multiply(otfTurbulent,detector_otf)
+
+
 # Simulate Moon
-photon_img = simulate_moon(0.07, 0.4, 610.0*10**-9,1)
+photon_img = simulate_moon(0.07, 0.4, 610.0*10**-9,1, False)
 np.save('photon_img', photon_img)
 # photon_img = np.load(path + 'photon_img.npy')
 
-output_img = real(ifft2(np.multiply(otfTurbulent, fft2(photon_img))))
+output_img = real(ifft2(np.multiply(total_otf, fft2(photon_img))))
+
+down_sample_img = 
+
 
 # Add Poison Noise
 # noisy_img = random_noise(real(output_img), mode='poisson')
 noisy_img = np.random.poisson(output_img)
 
-# f, ax = plt.subplots(1,2)
-# ax[0].imshow(output_img)
-# ax[0].set_title('Img Out')
-# ax[1].imshow(noisy_img)
-# ax[1].set_title('Noisy Img')
-# plt.savefig('noisy plots')
-# # print(noise_mask.max())
+f, ax = plt.subplots(1,2)
+ax[0].imshow(output_img)
+ax[0].set_title('Img Out')
+ax[1].imshow(noisy_img)
+ax[1].set_title('Noisy Img')
+plt.savefig('detector sim plots')
+# print(noise_mask.max())
 
 # noisy_img.tofile('noisy_img.csv', sep = ',')
 
@@ -94,24 +104,26 @@ noisy_img = np.random.poisson(output_img)
 # plt.savefig('plots')
 
 # Plots of Objects
-f, axarr = plt.subplots(2,2)
-axarr[0,0].imshow(noisy_img[0])
-axarr[0,0].set_xlabel('left 1/4')
-axarr[0,0].tick_params(left = False, right = False , labelleft = False , 
-                labelbottom = False, bottom = False) 
+# f, axarr = plt.subplots(2,2)
+# axarr[0,0].imshow(noisy_img[0])
+# axarr[0,0].set_xlabel('left 1/4')
+# axarr[0,0].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
 
-axarr[0,1].imshow(noisy_img[1])
-axarr[0,1].set_xlabel('left 2/4')
-axarr[0,1].tick_params(left = False, right = False , labelleft = False , 
-                labelbottom = False, bottom = False) 
+# axarr[0,1].imshow(noisy_img[1])
+# axarr[0,1].set_xlabel('left 2/4')
+# axarr[0,1].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
 
-axarr[1,0].imshow(noisy_img[2])
-axarr[1,0].set_xlabel('right 2/4')
-axarr[1,0].tick_params(left = False, right = False , labelleft = False , 
-                labelbottom = False, bottom = False)
+# axarr[1,0].imshow(noisy_img[2])
+# axarr[1,0].set_xlabel('right 2/4')
+# axarr[1,0].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False)
                 
-axarr[1,1].imshow(noisy_img[3]gits)
-axarr[1,1].set_xlabel('right 4/4')
-axarr[1,1].tick_params(left = False, right = False , labelleft = False , 
-                labelbottom = False, bottom = False) 
-plt.savefig('plots')
+# axarr[1,1].imshow(noisy_img[3])
+# axarr[1,1].set_xlabel('right 4/4')
+# axarr[1,1].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
+
+
+# plt.savefig('detector_model_imgs')
