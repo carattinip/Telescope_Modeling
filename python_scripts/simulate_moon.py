@@ -39,7 +39,7 @@ def simulate_moon(D,F,lam,dt, gen_dim_obj):
     # Calculate energy from the moon and
     Intensity = 1000.0                          # w / m ^ 2 power per unit area hitting the moon
     h = 6.62607015e-34                          # plancks constant
-    c = 3.0e8                                     # speed of light in meters
+    c = 3.0e8                                   # speed of light in meters
     v = c / lam                                 # frequency of light
     moon_reflectivity = 0.10                    # moon's reflectivity is 10%
     photons_moon = (Intensity * ((dtheta*Moon_dist)**2) * dt * moon_reflectivity) / (h * v)

@@ -31,6 +31,7 @@ r1 = (D/2)*pixle_per_meter      # radius of telescope in pixels
 r2 = (obs/2)*pixle_per_meter    # radius of obscuration in pixels
 scale = 1                       # value at dc
 phase = np.zeros([si, si])      # zero for non-abberated system
+dt = 100.0e-3                   # CCD integration time
 
 # Atmosphere Parameters
 z = 100*10**3                   # Karman line ~ 100km
@@ -43,8 +44,9 @@ source_file_path = os.getcwd() + '/source_files/'
 figures_path = os.getcwd() + '/figures/'
 
 
-## Determine to regenerate otfs or load from memory
-generate = False
+
+generate = True    # flag to generate data or load from memory
+gen_objects = True  # flag to generate dim objects around the moon
 
 # Generate data 
 if generate:
@@ -72,7 +74,7 @@ if generate:
     np.save(source_file_path + 'total_otf', total_otf)
 
     # Simulate Moon
-    photon_img = simulate_moon(0.07, 0.4, 610.0*10**-9,1, False)
+    photon_img = simulate_moon(D, f, lamb, dt, gen_objects)
     np.save(source_file_path + 'photon_img', photon_img)
 
     # Model Moon as seen by the telescope at niquist
@@ -81,7 +83,12 @@ if generate:
 
     # Down Sample to match IRL detector size 
     downscale_factor = 2
-    down_sample_img = output_img[::downscale_factor, ::downscale_factor]
+    if gen_objects:
+        down_sample_img = output_img[:,::downscale_factor, ::downscale_factor]
+
+    else:
+        down_sample_img = output_img[::downscale_factor, ::downscale_factor]
+    
     np.save(source_file_path + 'down_sample_img', down_sample_img)
 
     # Add Poison Noise
@@ -109,23 +116,23 @@ else:
 
     noisy_img = np.load(source_file_path + 'noisy_img.npy')
 
-f, ax = plt.subplots(1,3)
-ax[0].imshow(output_img)
-ax[0].set_title('Img Out')
-ax[0].tick_params(left = False, right = False , labelleft = False , 
-                labelbottom = False, bottom = False) 
-ax[1].imshow(down_sample_img)
-ax[1].set_title('Down Sample Image')
-ax[1].tick_params(left = False, right = False , labelleft = False , 
-                labelbottom = False, bottom = False) 
-ax[2].imshow(noisy_img)
-ax[2].set_title('Noisy Img')
-ax[2].tick_params(left = False, right = False , labelleft = False , 
-                labelbottom = False, bottom = False) 
-plt.savefig(figures_path + 'detector sim plots')
-# print(noise_mask.max())
 
-# noisy_img.tofile('noisy_img.csv', sep = ',')
+
+# f, ax = plt.subplots(1,3)
+# ax[0].imshow(output_img)
+# ax[0].set_title('Img Out')
+# ax[0].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
+# ax[1].imshow(down_sample_img)
+# ax[1].set_title('Down Sample Image')
+# ax[1].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
+# ax[2].imshow(noisy_img)
+# ax[2].set_title('Noisy Img')
+# ax[2].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
+# plt.savefig(figures_path + 'detector sim plots')
+
 
 
 # # Plots of Sim Chain
@@ -145,26 +152,26 @@ plt.savefig(figures_path + 'detector sim plots')
 # plt.savefig('plots')
 
 # Plots of Objects
-# f, axarr = plt.subplots(2,2)
-# axarr[0,0].imshow(noisy_img[0])
-# axarr[0,0].set_xlabel('left 1/4')
-# axarr[0,0].tick_params(left = False, right = False , labelleft = False , 
-#                 labelbottom = False, bottom = False) 
+f, axarr = plt.subplots(2,2)
+axarr[0,0].imshow(noisy_img[0])
+axarr[0,0].set_xlabel('left 1/4')
+axarr[0,0].tick_params(left = False, right = False , labelleft = False , 
+                labelbottom = False, bottom = False) 
 
-# axarr[0,1].imshow(noisy_img[1])
-# axarr[0,1].set_xlabel('left 2/4')
-# axarr[0,1].tick_params(left = False, right = False , labelleft = False , 
-#                 labelbottom = False, bottom = False) 
+axarr[0,1].imshow(noisy_img[1])
+axarr[0,1].set_xlabel('left 2/4')
+axarr[0,1].tick_params(left = False, right = False , labelleft = False , 
+                labelbottom = False, bottom = False) 
 
-# axarr[1,0].imshow(noisy_img[2])
-# axarr[1,0].set_xlabel('right 2/4')
-# axarr[1,0].tick_params(left = False, right = False , labelleft = False , 
-#                 labelbottom = False, bottom = False)
+axarr[1,0].imshow(noisy_img[2])
+axarr[1,0].set_xlabel('right 2/4')
+axarr[1,0].tick_params(left = False, right = False , labelleft = False , 
+                labelbottom = False, bottom = False)
                 
-# axarr[1,1].imshow(noisy_img[3])
-# axarr[1,1].set_xlabel('right 4/4')
-# axarr[1,1].tick_params(left = False, right = False , labelleft = False , 
-#                 labelbottom = False, bottom = False) 
+axarr[1,1].imshow(noisy_img[3])
+axarr[1,1].set_xlabel('right 4/4')
+axarr[1,1].tick_params(left = False, right = False , labelleft = False , 
+                labelbottom = False, bottom = False) 
 
 
-# plt.savefig('detector_model_imgs')
+plt.savefig(figures_path + 'detector_model_imgs')
