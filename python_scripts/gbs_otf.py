@@ -32,60 +32,82 @@ r2 = (obs/2)*pixle_per_meter    # radius of obscuration in pixels
 scale = 1                       # value at dc
 phase = np.zeros([si, si])      # zero for non-abberated system
 
-# path to saved files TODO: make OS agnostic
-path = os.getcwd() + '/source_files/'
-
-# Model Telescope
-tele_pupil = make_pupil(r1,r2,si)
-[tele_otf, tele_psf] = make_otf(scale,tele_pupil)
-np.save(path + 'tele_otf', tele_otf)
-np.save(path + 'tele_pupil', tele_pupil)
-# tele_otf = np.load(path + 'tele_otf.npy')
-# tele_pupil = np.load(path + 'tele_pupil.npy')
-
 # Atmosphere Parameters
 z = 100*10**3                   # Karman line ~ 100km
-ro = 0.02
-r1 = D/2
-dx = 4*r1/si
+ro = 0.02                       # seeing parameter
+r1a = D/2                       # radius used for turbulence calculations
+dx = 4*r1a/si                   # x steps for turbulence calculations
+
+# paths TODO: make OS agnostic
+source_file_path = os.getcwd() + '/source_files/'
+figures_path = os.getcwd() + '/figures/'
 
 
-# Model Atmosphere
-atmosphere_otf = make_long_otf(r1,dm,si,ro)
-np.save(path + 'atmosphere_otf', atmosphere_otf)
-# atmosphere_otf = np.load(path + 'atmosphere_otf.npy')
+## Determine to regenerate otfs or load from memory
+generate = False
 
-# Model Telescope + Atmosphere
-turbulent_otf = np.multiply(tele_otf, atmosphere_otf)
-turbulent_psf = ifft2(fftshift(turbulent_otf))
+# Generate data 
+if generate:
 
-# detector model
-detector_otf = detector_blur(2, 2, si)
-np.save(path + 'detector_otf', detector_otf)
-# detector_otf = np.load(path + 'detector_otf.npy')
-total_otf = np.multiply(turbulent_otf,detector_otf)
-np.save(path + 'total_otf', total_otf)
-# total_otf = np.load(path + 'total_otf.npy')
+    # Model Telescope
+    tele_pupil = make_pupil(r1,r2,si)
+    [tele_otf, tele_psf] = make_otf(scale,tele_pupil)
+    np.save(source_file_path + 'tele_otf', tele_otf)
+    np.save(source_file_path + 'tele_pupil', tele_pupil)
 
+    # Model Atmosphere
+    atmosphere_otf = make_long_otf(r1a,dm,si,ro)
+    np.save(source_file_path + 'atmosphere_otf', atmosphere_otf)
 
-# Simulate Moon
-photon_img = simulate_moon(0.07, 0.4, 610.0*10**-9,1, False)
-np.save(path + 'photon_img', photon_img)
-# photon_img = np.load(path + 'photon_img.npy')
+    # Model Telescope + Atmosphere
+    turbulent_otf = np.multiply(tele_otf, atmosphere_otf)
+    turbulent_psf = ifft2(fftshift(turbulent_otf))
 
-output_img = real(ifft2(np.multiply(total_otf, fft2(photon_img))))
+    # Detector model ( adds blur so the niquist image is represented at 1/2 niquist)
+    detector_otf = detector_blur(2, 2, si)
+    np.save(source_file_path + 'detector_otf', detector_otf)
 
-downscale_factor = 2
-down_sample_img = output_img[::downscale_factor, ::downscale_factor]
-np.save(path + 'down_sample_img', down_sample_img)
-# down_sample_img = np.load(path + 'down_sample_img.npy')
+    # Telescope + Atmosphere + Detector Model
+    total_otf = np.multiply(turbulent_otf,detector_otf)
+    np.save(source_file_path + 'total_otf', total_otf)
 
+    # Simulate Moon
+    photon_img = simulate_moon(0.07, 0.4, 610.0*10**-9,1, False)
+    np.save(source_file_path + 'photon_img', photon_img)
 
-# Add Poison Noise
-# noisy_img = random_noise(real(output_img), mode='poisson')
-noisy_img = np.random.poisson(output_img)
-np.save(path + 'noisy_img', noisy_img)
-# noisy_img = np.load(path + 'noisy_img.npy')
+    # Model Moon as seen by the telescope at niquist
+    output_img = real(ifft2(np.multiply(total_otf, fft2(photon_img))))
+    np.save(source_file_path + 'output_img', output_img)
+
+    # Down Sample to match IRL detector size 
+    downscale_factor = 2
+    down_sample_img = output_img[::downscale_factor, ::downscale_factor]
+    np.save(source_file_path + 'down_sample_img', down_sample_img)
+
+    # Add Poison Noise
+    noisy_img = np.random.poisson(output_img)
+    np.save(source_file_path + 'noisy_img', noisy_img)
+
+## Load From Files
+else:
+
+    tele_otf = np.load(source_file_path + 'tele_otf.npy')
+
+    tele_pupil = np.load(source_file_path + 'tele_pupil.npy')
+
+    atmosphere_otf = np.load(source_file_path + 'atmosphere_otf.npy')
+
+    detector_otf = np.load(source_file_path + 'detector_otf.npy')
+
+    total_otf = np.load(source_file_path + 'total_otf.npy')
+
+    photon_img = np.load(source_file_path + 'photon_img.npy')
+
+    output_img = np.load(source_file_path + 'output_img.npy')
+
+    down_sample_img = np.load(source_file_path + 'down_sample_img.npy')
+
+    noisy_img = np.load(source_file_path + 'noisy_img.npy')
 
 f, ax = plt.subplots(1,3)
 ax[0].imshow(output_img)
@@ -100,7 +122,7 @@ ax[2].imshow(noisy_img)
 ax[2].set_title('Noisy Img')
 ax[2].tick_params(left = False, right = False , labelleft = False , 
                 labelbottom = False, bottom = False) 
-plt.savefig('detector sim plots')
+plt.savefig(figures_path + 'detector sim plots')
 # print(noise_mask.max())
 
 # noisy_img.tofile('noisy_img.csv', sep = ',')
