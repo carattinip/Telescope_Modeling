@@ -53,7 +53,7 @@ def simulate_moon(D,F,lam,dt, gen_dim_obj):
 
     norm_moon = np.divide(Source_img, moon_max)
 
-    photons_img = np.multiply(norm_moon, photons)
+    photons_img = np.multiply(norm_moon, photons_telescope)
 
     if gen_dim_obj:
         # Add dim objects
