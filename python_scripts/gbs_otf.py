@@ -45,7 +45,7 @@ figures_path = os.getcwd() + '/figures/'
 
 
 
-generate = True    # flag to generate data or load from memory
+generate = False    # flag to generate data or load from memory
 gen_objects = True  # flag to generate dim objects around the moon
 
 # Generate data 
