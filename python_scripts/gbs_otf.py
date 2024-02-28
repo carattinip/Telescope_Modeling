@@ -45,7 +45,7 @@ figures_path = os.getcwd() + '/figures/'
 
 
 
-generate = False    # flag to generate data or load from memory
+generate = True    # flag to generate data or load from memory
 gen_objects = True  # flag to generate dim objects around the moon
 
 # Generate data 
@@ -54,6 +54,7 @@ if generate:
     # Model Telescope
     tele_pupil = make_pupil(r1,r2,si)
     [tele_otf, tele_psf] = make_otf(scale,tele_pupil)
+    np.save(source_file_path + 'tele_psf', tele_psf)
     np.save(source_file_path + 'tele_otf', tele_otf)
     np.save(source_file_path + 'tele_pupil', tele_pupil)
 
@@ -75,11 +76,11 @@ if generate:
 
     # Simulate Moon
     photon_img = simulate_moon(D, f, lamb, dt, gen_objects)
-    np.save(source_file_path + 'photon_img', photon_img)
+    np.save(source_file_path + 'photon_img_obj', photon_img)
 
     # Model Moon as seen by the telescope at niquist
     output_img = real(ifft2(np.multiply(total_otf, fft2(photon_img))))
-    np.save(source_file_path + 'output_img', output_img)
+    np.save(source_file_path + 'output_img_obj', output_img)
 
     # Down Sample to match IRL detector size 
     downscale_factor = 2
@@ -89,16 +90,18 @@ if generate:
     else:
         down_sample_img = output_img[::downscale_factor, ::downscale_factor]
     
-    np.save(source_file_path + 'down_sample_img', down_sample_img)
+    np.save(source_file_path + 'down_sample_img_obj', down_sample_img)
 
     # Add Poison Noise
     noisy_img = np.random.poisson(output_img)
-    np.save(source_file_path + 'noisy_img', noisy_img)
+    np.save(source_file_path + 'noisy_img_obj', noisy_img)
 
 ## Load From Files
 else:
 
     tele_otf = np.load(source_file_path + 'tele_otf.npy')
+    
+    tele_psf = np.load(source_file_path + 'tele_psf.npy')
 
     tele_pupil = np.load(source_file_path + 'tele_pupil.npy')
 
@@ -151,27 +154,27 @@ else:
 #                 labelbottom = False, bottom = False) 
 # plt.savefig('plots')
 
-# Plots of Objects
-f, axarr = plt.subplots(2,2)
-axarr[0,0].imshow(noisy_img[0])
-axarr[0,0].set_xlabel('left 1/4')
-axarr[0,0].tick_params(left = False, right = False , labelleft = False , 
-                labelbottom = False, bottom = False) 
+# # Plots of Objects
+# f, axarr = plt.subplots(2,2)
+# axarr[0,0].imshow(noisy_img[0])
+# axarr[0,0].set_xlabel('left 1/4')
+# axarr[0,0].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
 
-axarr[0,1].imshow(noisy_img[1])
-axarr[0,1].set_xlabel('left 2/4')
-axarr[0,1].tick_params(left = False, right = False , labelleft = False , 
-                labelbottom = False, bottom = False) 
+# axarr[0,1].imshow(noisy_img[1])
+# axarr[0,1].set_xlabel('left 2/4')
+# axarr[0,1].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
 
-axarr[1,0].imshow(noisy_img[2])
-axarr[1,0].set_xlabel('right 2/4')
-axarr[1,0].tick_params(left = False, right = False , labelleft = False , 
-                labelbottom = False, bottom = False)
+# axarr[1,0].imshow(noisy_img[2])
+# axarr[1,0].set_xlabel('right 2/4')
+# axarr[1,0].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False)
                 
-axarr[1,1].imshow(noisy_img[3])
-axarr[1,1].set_xlabel('right 4/4')
-axarr[1,1].tick_params(left = False, right = False , labelleft = False , 
-                labelbottom = False, bottom = False) 
+# axarr[1,1].imshow(noisy_img[3])
+# axarr[1,1].set_xlabel('right 4/4')
+# axarr[1,1].tick_params(left = False, right = False , labelleft = False , 
+#                 labelbottom = False, bottom = False) 
 
 
-plt.savefig(figures_path + 'detector_model_imgs')
+# plt.savefig(figures_path + 'detector_model_imgs')

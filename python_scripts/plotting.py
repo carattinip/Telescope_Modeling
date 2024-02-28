@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import real
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import os
@@ -37,27 +38,61 @@ figures_path = os.getcwd() + '/figures/'
 # plt.title('Telescope Pupil')
 # plt.savefig(figures_path + 'pupil_plot')
 
-## Plot Tele PSF and OTF
-tele_otf = np.load(source_file_path + 'tele_otf.npy')
+## Plot Tele OTF
+# tele_otf = np.load(source_file_path + 'tele_otf.npy')
 
-fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+# fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
-# Make data.
-fmax = (D-obs)/(2*lamb*f)
-fs = fmax*2
-df = fs/si
-X = np.arange(-fmax,fmax, df)/1e3
-Y = X
-X, Y = np.meshgrid(X, Y)
-
-
-# Plot the surface.
-ax.set_xlabel('x Spatial Frequency (kilocycles/m)')
-ax.set_ylabel('y Spatial Frequency (kilocycles/m)')
-ax.set_zlabel('Magnitude')
-ax.set_title('Telescope OTF')
-surf = ax.plot_surface(X, Y, abs(fftshift(tele_otf)), cmap=cm.winter)
+# # Make data.
+# fmax = (D-obs)/(2*lamb*f)
+# fs = fmax*2
+# df = fs/si
+# X = np.arange(-fmax,fmax, df)/1e3
+# Y = X
+# X, Y = np.meshgrid(X, Y)
 
 
-plt.savefig(figures_path + 'tele_otf')
+# # Plot the surface.
+# ax.set_xlabel('x Spatial Frequency (kilocycles/m)')
+# ax.set_ylabel('y Spatial Frequency (kilocycles/m)')
+# ax.set_zlabel('Magnitude')
+# ax.set_title('Telescope OTF')
+# surf = ax.plot_surface(X, Y, abs(fftshift(tele_otf)), cmap=cm.winter)
 
+# plt.savefig(figures_path + 'tele_otf')
+
+
+# Plot Telescope PSF
+tele_psf = np.load(source_file_path + 'tele_psf.npy')
+
+# tele_psf = ifft2(tele_otf)
+
+# # plt.imshow(real(tele_psf), extent=[0,(si/pixle_per_meter), 0, (si/pixle_per_meter)])
+plt.imshow(real(fftshift(tele_psf)))
+plt.xlim(1500-5,1500+5)
+plt.ylim(1500+5,1500-5)
+plt.xlabel('x (pixles)')
+plt.ylabel('y (pixles)')
+plt.title('Telescope PSF')
+plt.savefig(figures_path + 'tele_psf')
+
+
+# fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+
+# # # Make data.
+# # fmax = (D-obs)/(2*lamb*f)
+# # fs = fmax*2
+# # df = fs/si
+# # X = np.arange(-fmax,fmax, df)/1e3
+# X = np.arange(0,len(tele_psf))
+# Y = X
+# X, Y = np.meshgrid(X, Y)
+
+
+# # Plot the surface.
+# ax.set_xlabel('x (m)')
+# ax.set_ylabel('y (m)')
+# ax.set_zlabel('Magnitude')
+# ax.set_title('Telescope PSF')
+# surf = ax.plot_surface(X, Y, real(tele_psf), cmap=cm.winter)
+# plt.savefig(figures_path + 'tele_psf')
