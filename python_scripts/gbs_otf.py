@@ -8,7 +8,7 @@ import numpy as np
 from numpy import squeeze, ceil, real
 from scipy.fft import fft2, ifft2, fftshift
 import matplotlib.pyplot as plt
-from skimage.util import random_noise
+# from skimage.util import random_noise
 import os
 
 

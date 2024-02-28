@@ -9,6 +9,7 @@ import os
 from scipy.fft import fft2, ifft2, fftshift
 from numpy import squeeze, ceil, real
 import matplotlib.pyplot as plt
+import os
 
 def simulate_moon(D,F,lam,dt, gen_dim_obj):
 
@@ -62,15 +63,17 @@ def simulate_moon(D,F,lam,dt, gen_dim_obj):
         obj_photons = (Intensity * (object_size) * dt * obj_reflectivity) / (h * v)
         obj_photons_telescope = (obj_photons*np.pi*(D/2)**2)/(2*np.pi*(Moon_dist)**2)
 
-        num_objects = 4
+        num_objects = 500
 
         images = np.zeros([num_objects,3000,3000])
-        # obj_pos = np.arange(0,3000,2,dtype=int)
-        obj_pos= [0,999,1999,2999]
+        obj_pos = np.arange(0,3000,2,dtype=int)
+        # obj_pos= [0,999,1999,2999]
 
         img_index = np.arange(0,num_objects,dtype=int)
-        images[img_index] = photons_img
-        images[img_index,1500,obj_pos] = obj_photons_telescope
+        for i in img_index:
+            images[i] = photons_img
+            images[i,1500,obj_pos[i]] = obj_photons_telescope
+
 
     else:
         images = photons_img
@@ -81,3 +84,15 @@ def simulate_moon(D,F,lam,dt, gen_dim_obj):
 
 # plt.imshow(photon_img)
 # plt.savefig('photon_moon')
+
+# Telescope Parameters
+D = 0.07                        # diameter of telescope in meters
+lamb = 610*10**(-9)             # wavelength of ligth in meters
+f = 0.4                         # focal length in meters
+dt = 100.0e-3                   # CCD integration time
+
+photon_img = simulate_moon(D, f, lamb, dt, True)
+
+source_file_path = os.getcwd() + '/source_files/'
+
+np.save(source_file_path + 'photon_img_obj', photon_img)
