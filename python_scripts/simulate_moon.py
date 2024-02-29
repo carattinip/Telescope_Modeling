@@ -63,16 +63,20 @@ def simulate_moon(D,F,lam,dt, gen_dim_obj):
         obj_photons = (Intensity * (object_size) * dt * obj_reflectivity) / (h * v)
         obj_photons_telescope = (obj_photons*np.pi*(D/2)**2)/(2*np.pi*(Moon_dist)**2)
 
-        num_objects = 500
+        num_objects = 1500
 
         images = np.zeros([num_objects,3000,3000])
         obj_pos = np.arange(0,3000,2,dtype=int)
-        # obj_pos= [0,999,1999,2999]
 
         img_index = np.arange(0,num_objects,dtype=int)
-        for i in img_index:
-            images[i] = photons_img
-            images[i,1500,obj_pos[i]] = obj_photons_telescope
+        images[img_index] = photons_img
+        images[img_index,1500,obj_pos] = obj_photons_telescope
+        # obj_pos= [0,999,1999,2999]
+
+        # img_index = np.arange(0,num_objects,dtype=int)
+        # for i in img_index:
+        #     images[i] = photons_img
+        #     images[i,1500,obj_pos[i]] = obj_photons_telescope
 
 
     else:
@@ -95,4 +99,4 @@ photon_img = simulate_moon(D, f, lamb, dt, True)
 
 source_file_path = os.getcwd() + '/source_files/'
 
-np.save(source_file_path + 'photon_img_obj', photon_img)
+np.save(source_file_path + 'photon_img_obj_full', photon_img)
