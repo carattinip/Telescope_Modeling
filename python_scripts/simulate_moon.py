@@ -89,14 +89,14 @@ def simulate_moon(D,F,lam,dt, gen_dim_obj):
 # plt.imshow(photon_img)
 # plt.savefig('photon_moon')
 
-# Telescope Parameters
-D = 0.07                        # diameter of telescope in meters
-lamb = 610*10**(-9)             # wavelength of ligth in meters
-f = 0.4                         # focal length in meters
-dt = 100.0e-3                   # CCD integration time
+# # Telescope Parameters
+# D = 0.07                        # diameter of telescope in meters
+# lamb = 610*10**(-9)             # wavelength of ligth in meters
+# f = 0.4                         # focal length in meters
+# dt = 100.0e-3                   # CCD integration time
 
-photon_img = simulate_moon(D, f, lamb, dt, True)
+# photon_img = simulate_moon(D, f, lamb, dt, True)
 
-source_file_path = os.getcwd() + '/source_files/'
+# source_file_path = os.getcwd() + '/source_files/'
 
-np.save(source_file_path + 'photon_img_obj_full', photon_img)
+# np.save(source_file_path + 'photon_img_obj_full', photon_img)

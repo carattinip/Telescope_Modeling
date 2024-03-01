@@ -40,13 +40,13 @@ r1a = D/2                       # radius used for turbulence calculations
 dx = 4*r1a/si                   # x steps for turbulence calculations
 
 # paths TODO: make OS agnostic
-source_file_path = os.getcwd() + '/source_files/'
+source_file_path = os.getcwd() + '/source_files/no_obj/'
 figures_path = os.getcwd() + '/figures/'
 
 
 
 generate = True    # flag to generate data or load from memory
-gen_objects = True  # flag to generate dim objects around the moon
+gen_objects = False  # flag to generate dim objects around the moon
 
 # Generate data 
 if generate:
@@ -76,11 +76,11 @@ if generate:
 
     # Simulate Moon
     photon_img = simulate_moon(D, f, lamb, dt, gen_objects)
-    np.save(source_file_path + 'photon_img_obj', photon_img)
+    np.save(source_file_path + 'photon_img', photon_img)
 
     # Model Moon as seen by the telescope at niquist
     output_img = real(ifft2(np.multiply(total_otf, fft2(photon_img))))
-    np.save(source_file_path + 'output_img_obj', output_img)
+    np.save(source_file_path + 'output_img', output_img)
 
     # Down Sample to match IRL detector size 
     downscale_factor = 2
@@ -90,11 +90,11 @@ if generate:
     else:
         down_sample_img = output_img[::downscale_factor, ::downscale_factor]
     
-    np.save(source_file_path + 'down_sample_img_obj', down_sample_img)
+    np.save(source_file_path + 'down_sample', down_sample_img)
 
     # Add Poison Noise
-    noisy_img = np.random.poisson(output_img)
-    np.save(source_file_path + 'noisy_img_obj', noisy_img)
+    noisy_img = np.random.poisson(down_sample_img)
+    np.save(source_file_path + 'noisy_img', noisy_img)
 
 ## Load From Files
 else:
